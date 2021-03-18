@@ -14,14 +14,19 @@ type Student struct {
 	IsMale bool    `json:"ismale"`
 }
 
+type Students []Student
+
+var students Students
+
 func CreateStudent(c echo.Context) error {
 	// Get name and email
-	m := new(Student)
-	if err := c.Bind(m); err != nil {
+	student := Student{}
+	if err := c.Bind(&student); err != nil {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(*m)
+	students = append(students, student)
+	fmt.Println(student)
 
 	return nil
 	// Id := c.FormValue("id")
@@ -31,7 +36,26 @@ func CreateStudent(c echo.Context) error {
 	// return c.String(http.StatusOK, "id:"+Id+", name:"+Name+", gpa:"+GPA+", ismale:"+IsMale)
 }
 
+func GetStudentid(c echo.Context) error {
+	id := c.QueryParam("id")
+	for _, value := range students {
+		if value.Id == id {
+			return c.JSON(http.StatusOK, value)
+		}
+	}
+	return c.JSON(http.StatusBadRequest, false)
+}
+func DeleteStudentid(c echo.Context) error {
+	id := c.QueryParam("id")
+	for i, _ := range students {
+		if students[i].Id == id {
+			students = append(students[:i], students[i+1:]...)
+			return c.JSON(http.StatusOK, students)
+		}
+	}
+	return c.JSON(http.StatusBadRequest, nil)
+}
+
 func GetStudent(c echo.Context) error {
-	Id := c.QueryParam("id")
-	return c.String(http.StatusOK, "id:"+Id)
+	return c.JSON(http.StatusOK, students)
 }
